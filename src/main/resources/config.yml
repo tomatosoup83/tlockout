@@ -1,0 +1,101 @@
+# TLockout
+# config-version is bumped when the format changes; the plugin upgrades older files itself.
+config-version: 8
+
+# How often goals are evaluated, in ticks. 20 ticks = 1 second.
+# Lower = faster claim detection, slightly more CPU. 10 is a good default.
+check-interval-ticks: 10
+
+# Prefix used for chat messages (MiniMessage format). Set to "" for no prefix.
+message-prefix: "<gold><bold>Lockout</bold></gold> <dark_gray>»</dark_gray> "
+
+# teams | ffa   (can also be switched live between rounds with /lockout mode <teams|ffa>)
+mode: teams
+
+teams:
+  # false = players cannot damage their own teammates during a round
+  friendly-fire: false
+
+  # Each team needs a `concrete`, which sets both its GUI icon and its text colour.
+  # Any of the 16 concrete blocks works: white, orange, magenta, light_blue, yellow,
+  # lime, pink, gray, light_gray, cyan, purple, blue, brown, green, red, black.
+  # `name` is optional and defaults to the concrete's colour name.
+  red:
+    name: Red
+    concrete: RED_CONCRETE
+  blue:
+    name: Blue
+    concrete: BLUE_CONCRETE
+
+win:
+  # Goals needed to win in teams mode. With a 5x5 board, 13 is a majority and cannot tie.
+  goals-to-win: 13
+  # Goals needed to win in FFA mode (every player is their own side).
+  ffa-goals-to-win: 5
+
+match:
+  # When true, /lockout start resets every participating player's inventory, armor/offhand,
+  # potion effects, XP, hunger, health, advancements and untyped statistics before the round
+  # begins. Can be toggled live with /lockout autoreset [on|off|toggle].
+  auto-reset: true
+  # When true, participating players keep their inventory and XP levels on death during an
+  # active round (without modifying world gamerules). Can be toggled live with
+  # /lockout keepinventory [on|off|toggle].
+  keep-inventory: true
+  # Pre-round countdown length in seconds for /lockout start (0 = start immediately).
+  countdown-seconds: 5
+  # When true, participating players are frozen in place and protected from damage/block edits
+  # during the pre-round countdown.
+  freeze-during-countdown: true
+  # When true, harmless coloured fireworks launch when a goal is claimed or a match is won.
+  fireworks-on-claim: true
+
+world-scan:
+  # When true, board generation checks whether required structures and biomes exist near the
+  # overworld spawn before rolling goals that depend on them. Cached per world; cleared by
+  # /lockout reload.
+  enabled: true
+  # Search radius in blocks around the overworld spawn point (Fabric default: 750).
+  radius: 750
+
+sounds:
+  # Play sound effects for goal claims, round start and match finish.
+  enabled: true
+  # Each cue accepts sound (vanilla namespaced key), volume, pitch, and optional second-pitch +
+  # delay-ticks for two-note chimes. Set sound: "" to mute an individual cue.
+  goal-team:
+    sound: "minecraft:block.note_block.pling"
+    volume: 1.0
+    pitch: 1.0
+    second-pitch: 1.5
+    delay-ticks: 3
+  goal-opponent:
+    sound: "minecraft:block.note_block.bass"
+    volume: 1.0
+    pitch: 0.9
+    second-pitch: 0.6
+    delay-ticks: 3
+  goal-spectator:
+    sound: "minecraft:block.note_block.chime"
+    volume: 0.9
+    pitch: 1.0
+  game-start:
+    sound: "minecraft:item.goat_horn.sound.0"
+    volume: 0.9
+    pitch: 1.0
+  countdown-tick:
+    sound: "minecraft:block.note_block.bit"
+    volume: 0.9
+    pitch: 1.0
+  game-win:
+    sound: "minecraft:ui.toast.challenge_complete"
+    volume: 0.9
+    pitch: 1.0
+  game-lose:
+    sound: "minecraft:entity.warden.death"
+    volume: 0.8
+    pitch: 1.0
+  game-finish-spectator:
+    sound: "minecraft:ui.toast.challenge_complete"
+    volume: 0.9
+    pitch: 1.0

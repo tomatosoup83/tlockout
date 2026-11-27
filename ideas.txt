@@ -1,0 +1,71 @@
+
+
+- one player sleep is default
+- unlocok all recipes by default
+
+BIG CHANGE: sth happens when a goal is completed
+	- random position switch
+	- stealth kill: random tp within 50 blocks, the other player knows.
+
+
+- add a command to set number of goals to win
+- opped command that force ends the game and let a team win
+- fireworks when goal completion
+
+- limit amount of nether/end goals
+
+
+
+MVP:
+- (MUST DO) goal generation and tracking system
+	- get this working with the goal templates
+- generate on a bingo board
+- interactive bingo board (first to get bingo?/first to complete half the board) browsable by mouse
+	- shows what goal is completed by what team/player
+
+FUTURE: 
+- player tracking compass
+- reward system after you complete a goal
+
+
+NICE TO ADDs:
+- FSG seed generation
+- 1.16.1 speedrunning mechanics on the latest version
+
+
+GOAL TEMPLATES:
+- get (optional: Y quantity of ) X item
+- get X weapon/tool/armor/equipment to (choose between: half/quarter) durability level
+- kill a player (optional: with X item)
+- go to X structure
+- go to X biome
+- kill X mob
+- tame X mob
+- breed X mob
+
+- die by X method
+
+
+TRACKING HUD (planned next slice):
+- player picks a few goals to target (configurable max, default 5)
+	- pick from the board GUI (toggle on/off), plus commands
+- per-player: each player tracks their own goals
+- sidebar: lists all targeted goals, ranked by progress
+	- shows per-goal progress (e.g. 3/5 iron ingot)
+- bossbar: shows the current top-ranked target with a live progress bar
+	- updates as the player makes progress
+	- on completion, advances to the next ranked goal
+
+TEAMS + WIN CONDITION (current slice):
+- two sides, players self-assign (plus an admin override and an auto-balance helper)
+- first side to a majority of the 25 goal board (13) wins
+- game freezes on win; claims are refused from then on
+- built on a "side" abstraction so FFA (below) can slot in without a rewrite
+
+FFA MODE (future, do not build yet):
+- no teams: every player is their own side, same board and same lockout rules
+- win condition changes: majority of 25 is meaningless, so it becomes
+  "first player to N goals" (configurable, default 5)
+- claims are attributed to the player instead of a team
+- needs nothing new structurally: a side is just a one-member team
+- selectable with a config switch (mode: teams | ffa) rather than a separate plugin

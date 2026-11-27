@@ -1,0 +1,526 @@
+# TLockout goal templates
+#
+# goals-version is bumped when the catalogue format or shipped catalogue changes; the plugin
+# upgrades older files itself (the previous file is saved as goals.yml.v<old version>.bak).
+goals-version: 9
+#
+# Each 5x5 board draws 25 unique templates from this list, weighted by `weight`, subject to:
+#   - `pool`: random (default) | custom-only (excluded from normal random board generation)
+#   - `team-size`: any (default) | 2 | 2+
+#   - `requires`: { biomes: [...], structures: [...] } (checked against world-scan in config.yml)
+#   - `GoalGroups` anti-clustering caps & predecessor rules (so no single family floods a board)
+#
+# `id` must be unique. `display` and `icon` are optional - they are generated from
+# the other fields when omitted.
+#
+# `variants` turns one template into several concrete board cells. The variants are chosen when
+# the board is generated; `{name}` placeholders are substituted into display/requirement text
+# (prettified) and item/icon names (uppercased).
+#
+# Types:
+#   item         - item: MATERIAL, count: N            (have N of the item in inventory at once)
+#   durability   - item: MATERIAL, remaining-percent: N (item at or below N% durability)
+#   mob_kill     - entity: ENTITY_TYPE, count: N
+#   player_kill  - count: N
+#   biome        - biome: biome_name OR biomes: [biome_name, ...]
+#   tame         - entity: ENTITY_TYPE
+#   breed        - entity: ENTITY_TYPE, count: N
+#   breed_unique - count: N (unique animal species bred across the team)
+#   dimension    - dimension: NETHER | END | OVERWORLD
+#   consume_item - item: MATERIAL, potion: POTION_TYPE (potion only when item is POTION)
+#   unique_foods - count: N
+#   advancement  - advancements: [NAMESPACED_KEY, ...]   (any one completes it)
+#   advancement_count - count: N
+#   status_effect - effect: POTION_EFFECT_TYPE
+#   status_effect_count - count: N
+#   milk_effect  - no params
+#   death_by     - damage-type: KEY, entity: ENTITY_TYPE and/or special: VINES (at least one)
+#   damage_total - mode: TAKEN | DEALT, amount: N
+#   xp_level     - level: N
+#   position     - mode: HEIGHT_LIMIT | BEDROCK | NETHER_ROOF
+#   empty_hunger - no params
+#   ride         - entity: ENTITY_TYPE
+#   stat_counter - statistic: STATISTIC, amount: N, divisor: N (optional)
+#   armor_set    - items: [MATERIAL, ...] OR mode: UNIQUE_DYED_LEATHER | ENCHANTED
+#   armor_piece  - item: MATERIAL or items: [MATERIAL, ...], optional color: DYE_COLOR
+#   armor_timer  - item: MATERIAL, seconds: N (cumulative wear time across the round)
+#   wolf_armor   - no params (put wolf armor on a tamed wolf)
+#   item_set     - items: [MATERIAL, ...], optional count: N (defaults to all items; team-wide)
+#   unique_inventory - optional count: N (default 36; best single player)
+#   mob_kill_total   - count: N (any N mobs killed across the team)
+#   mob_kill_unique  - count: N (unique hostile mobs) OR entities: [ENTITY_TYPE, ...] (team set)
+#   mob_kill_group   - entities: [ENTITY_TYPE, ...], count: N (total kills across matching mobs)
+#   colored_sheep_kill - color: DYE_COLOR (kill a sheep of that wool colour)
+#   opponent     - trigger: DEATH|DAMAGE_TAKEN|FALL_DAMAGE|CATCH_FIRE|TOUCH_WATER|OBTAIN_ITEM|EAT_FOOD|HIT_BY_EGG|HIT_BY_SNOWBALL
+#   workstation  - station: ANVIL|CAULDRON|COMPOSTER|ENCHANTING_TABLE|GRINDSTONE|LOOM|SMITHING_TABLE|STONECUTTER
+#   brew_potion  - potions: [POTION_TYPE, ...] OR mode: LINGERING
+#   mine_block   - blocks: [MATERIAL, ...], optional count: N
+#   block_action - action: USE_JUKEBOX|GLOW_INK_CRIMSON_SIGN|POT_FLOWER|FILL_ARMOR_STAND|
+#                          ITEM_FRAME_IN_ITEM_FRAME|FILL_CAMPFIRE|FILL_CHISELED_BOOKSHELF|
+#                          PLACE_END_CRYSTAL|LIGHT_CANDLE|SHOOT_FIREWORK_CROSSBOW|
+#                          TOOT_GOAT_HORN|BRUSH_SUSPICIOUS_BLOCK|ANGER_ZOMBIFIED_PIGLIN|SHIELD_DISABLED
+#   banner_shield - no params (hold a shield decorated with any banner)
+#   conditional_kill - entity: ENTITY_TYPE, dimension: NETHER|END|OVERWORLD and/or damage-type: KEY
+
+templates:
+  # ---- core items (balanced weights; capped at 6 plain items per board) --
+  - { id: iron_ingot,    type: item, item: IRON_INGOT,     count: 8,  weight: 5 }
+  - { id: gold_ingot,    type: item, item: GOLD_INGOT,     count: 8,  weight: 4 }
+  - { id: diamond,       type: item, item: DIAMOND,        count: 3,  weight: 4 }
+  - { id: emerald,       type: item, item: EMERALD,        count: 2,  weight: 3 }
+  - { id: redstone,      type: item, item: REDSTONE,       count: 16, weight: 4 }
+  - { id: lapis,         type: item, item: LAPIS_LAZULI,   count: 16, weight: 4 }
+  - { id: blaze_rod,     type: item, item: BLAZE_ROD,      count: 4,  weight: 4 }
+  - { id: ender_pearl,   type: item, item: ENDER_PEARL,    count: 2,  weight: 4 }
+  - { id: slime_ball,    type: item, item: SLIME_BALL,     count: 4,  weight: 4 }
+  - { id: string,        type: item, item: STRING,         count: 8,  weight: 4 }
+  - { id: leather,       type: item, item: LEATHER,        count: 8,  weight: 4 }
+  - { id: coal,          type: item, item: COAL,           count: 16, weight: 4 }
+  - { id: obsidian,      type: item, item: OBSIDIAN,       count: 4,  weight: 4 }
+  - { id: glowstone,     type: item, item: GLOWSTONE,      count: 8,  weight: 3 }
+  - { id: arrow,         type: item, item: ARROW,          count: 16, weight: 4 }
+  - { id: bread,         type: item, item: BREAD,          count: 8,  weight: 4 }
+  - { id: book,          type: item, item: BOOK,           count: 3,  weight: 3 }
+  - { id: amethyst,      type: item, item: AMETHYST_SHARD, count: 8,  weight: 3 }
+
+  # ---- equipment durability ---------------------------------------------
+  - { id: worn_pickaxe,  type: durability, item: DIAMOND_PICKAXE,  remaining-percent: 50, weight: 4 }
+  - { id: worn_sword,    type: durability, item: DIAMOND_SWORD,    remaining-percent: 25, weight: 4 }
+  - { id: worn_chest,    type: durability, item: IRON_CHESTPLATE,  remaining-percent: 50, weight: 3 }
+  - { id: worn_shield,   type: durability, item: SHIELD,           remaining-percent: 25, weight: 3 }
+
+  # ---- mobs --------------------------------------------------------------
+  - { id: zombie_hunt,   type: mob_kill, entity: ZOMBIE,   count: 5, weight: 5 }
+  - { id: skeleton_hunt, type: mob_kill, entity: SKELETON, count: 5, weight: 5 }
+  - { id: spider_hunt,   type: mob_kill, entity: SPIDER,   count: 5, weight: 5 }
+  - { id: creeper_hunt,  type: mob_kill, entity: CREEPER,  count: 3, weight: 5 }
+  - { id: enderman_hunt, type: mob_kill, entity: ENDERMAN, count: 2, weight: 4 }
+  - { id: blaze_hunt,    type: mob_kill, entity: BLAZE,    count: 2, weight: 4 }
+  - { id: drowned_hunt,  type: mob_kill, entity: DROWNED,  count: 3, weight: 4 }
+  - { id: witch_hunt,    type: mob_kill, entity: WITCH,    count: 2, weight: 3, requires: { structures: [swamp_hut] } }
+  - { id: phantom_hunt,  type: mob_kill, entity: PHANTOM,  count: 2, weight: 3 }
+  - { id: slime_hunt,    type: mob_kill, entity: SLIME,    count: 2, weight: 3 }
+
+  # ---- taming ------------------------------------------------------------
+  - { id: tame_wolf,     type: tame, entity: WOLF,   weight: 5 }
+  - { id: tame_cat,      type: tame, entity: CAT,    weight: 5, requires: { structures: [village_desert, village_plains, village_savanna, village_snowy, village_taiga] } }
+  - { id: tame_horse,    type: tame, entity: HORSE,  weight: 4 }
+  - { id: tame_parrot,   type: tame, entity: PARROT, weight: 4, requires: { biomes: [bamboo_jungle, jungle, sparse_jungle] } }
+
+  # ---- breeding ----------------------------------------------------------
+  - { id: breed_cow,     type: breed, entity: COW,     weight: 5 }
+  - { id: breed_pig,     type: breed, entity: PIG,     weight: 5 }
+  - { id: breed_sheep,   type: breed, entity: SHEEP,   weight: 5 }
+  - { id: breed_chicken, type: breed, entity: CHICKEN, weight: 5 }
+  - { id: breed_rabbit,  type: breed, entity: RABBIT,  weight: 4, requires: { biomes: [desert, snowy_plains, snowy_taiga, grove, snowy_slopes, flower_forest, taiga, meadow, old_growth_pine_taiga, old_growth_spruce_taiga, cherry_grove] } }
+  - { id: breed_fox,     type: breed, entity: FOX,     display: "Breed Fox",     weight: 4, requires: { biomes: [taiga, old_growth_spruce_taiga, old_growth_pine_taiga, snowy_taiga, grove] } }
+  - { id: breed_frogs,   type: breed, entity: FROG,    display: "Breed Frogs",   weight: 4, requires: { biomes: [swamp, mangrove_swamp] } }
+  - { id: breed_goat,    type: breed, entity: GOAT,    display: "Breed Goat",    weight: 4, requires: { biomes: [frozen_peaks, jagged_peaks, snowy_slopes] } }
+  - { id: breed_hoglin,  type: breed, entity: HOGLIN,  display: "Breed Hoglin",  weight: 4 }
+  - { id: breed_strider, type: breed, entity: STRIDER, display: "Breed Strider", weight: 4 }
+  - { id: breed_4_unique_animals, type: breed_unique, count: 4, display: "Breed 4 Unique Animals", weight: 4 }
+  - { id: breed_6_unique_animals, type: breed_unique, count: 6, display: "Breed 6 Unique Animals", weight: 3 }
+  - { id: breed_8_unique_animals, type: breed_unique, count: 8, display: "Breed 8 Unique Animals", weight: 2 }
+
+  # ---- biomes ------------------------------------------------------------
+  - { id: visit_desert,     type: biome, biome: desert,  weight: 4, requires: { biomes: [desert] } }
+  - { id: visit_plains,     type: biome, biome: plains,  weight: 4, requires: { biomes: [plains] } }
+  - { id: visit_forest,     type: biome, biome: forest,  weight: 4, requires: { biomes: [forest] } }
+  - { id: visit_taiga,      type: biome, biome: taiga,   weight: 4, requires: { biomes: [taiga] } }
+  - { id: visit_swamp,      type: biome, biome: swamp,   weight: 4, requires: { biomes: [swamp] } }
+  - { id: visit_jungle,     type: biome, biomes: [jungle, bamboo_jungle, sparse_jungle], display: "Visit the Jungle biome", weight: 4, requires: { biomes: [jungle, bamboo_jungle, sparse_jungle] } }
+  - { id: visit_savanna,    type: biome, biomes: [savanna, savanna_plateau, windswept_savanna], display: "Visit the Savanna biome", weight: 4, requires: { biomes: [savanna, savanna_plateau, windswept_savanna] } }
+  - { id: visit_badlands,   type: biome, biomes: [badlands, eroded_badlands, wooded_badlands], display: "Find Badlands Biome", weight: 4, requires: { biomes: [badlands, eroded_badlands, wooded_badlands] } }
+  - { id: visit_ocean,      type: biome, biomes: [ocean, deep_ocean], display: "Visit the Ocean biome", weight: 3, requires: { biomes: [ocean, deep_ocean] } }
+  - { id: visit_ice_spikes, type: biome, biome: ice_spikes, icon: PACKED_ICE, display: "Find Ice Spikes Biome", weight: 4, requires: { biomes: [ice_spikes] } }
+  - { id: visit_mushroom,   type: biome, biome: mushroom_fields, icon: MYCELIUM, display: "Find Mushroom Biome", weight: 3, requires: { biomes: [mushroom_fields] } }
+
+  # ---- pvp ---------------------------------------------------------------
+  - { id: player_hunt,   type: player_kill, count: 1, team-size: "2+", weight: 3 }
+
+  # ========================================================================
+  # Fabric catalogue port (Slice 8)
+  # ========================================================================
+
+  # ---- single-item obtains ----------------------------------------------
+  - { id: obtain_activator_rail,         type: item, item: ACTIVATOR_RAIL,         count: 1, display: "Obtain Activator Rail", weight: 4 }
+  - { id: obtain_ancient_debris,         type: item, item: ANCIENT_DEBRIS,         count: 1, display: "Obtain Ancient Debris", weight: 4 }
+  - { id: obtain_bell,                   type: item, item: BELL,                   count: 1, display: "Obtain Bell", weight: 4, requires: { structures: [village_desert, village_plains, village_savanna, village_snowy, village_taiga] } }
+  - { id: obtain_bookshelf,              type: item, item: BOOKSHELF,              count: 1, display: "Obtain Bookshelf", weight: 4 }
+  - { id: obtain_brick_wall,             type: item, item: BRICK_WALL,             count: 1, display: "Obtain Brick Wall", weight: 4 }
+  - { id: obtain_tropical_fish_bucket,   type: item, item: TROPICAL_FISH_BUCKET,   count: 1, display: "Obtain Bucket of Tropical Fish", weight: 4, requires: { biomes: [warm_ocean, deep_lukewarm_ocean, lukewarm_ocean, lush_caves, mangrove_swamp] } }
+  - { id: obtain_clock,                  type: item, item: CLOCK,                  count: 1, display: "Obtain Clock", weight: 4 }
+  - { id: obtain_cobweb,                 type: item, item: COBWEB,                 count: 1, display: "Obtain Cobweb", weight: 4 }
+  - { id: obtain_daylight_detector,      type: item, item: DAYLIGHT_DETECTOR,      count: 1, display: "Obtain Daylight Detector", weight: 4 }
+  - { id: obtain_detector_rail,          type: item, item: DETECTOR_RAIL,          count: 1, display: "Obtain Detector Rail", weight: 4 }
+  - { id: obtain_dispenser,              type: item, item: DISPENSER,              count: 1, display: "Obtain Dispenser", weight: 4 }
+  - { id: obtain_dragon_egg,             type: item, item: DRAGON_EGG,             count: 1, display: "Obtain Dragon Egg", weight: 1 }
+  - { id: obtain_end_rod,                type: item, item: END_ROD,                count: 1, display: "Obtain End Rod", weight: 4 }
+  - { id: obtain_ender_chest,            type: item, item: ENDER_CHEST,            count: 1, display: "Obtain Ender Chest", weight: 4 }
+  - { id: obtain_experience_bottle,      type: item, item: EXPERIENCE_BOTTLE,      count: 1, display: "Obtain Experience Bottle", weight: 4 }
+  - { id: obtain_flowering_azalea,       type: item, item: FLOWERING_AZALEA,       count: 1, display: "Obtain Flowering Azalea", weight: 4 }
+  - { id: obtain_heart_of_the_sea,       type: item, item: HEART_OF_THE_SEA,       count: 1, display: "Obtain Heart of the Sea", weight: 3 }
+  - { id: obtain_mossy_stone_brick_wall, type: item, item: MOSSY_STONE_BRICK_WALL, count: 1, display: "Obtain Mossy Stone Brick Wall", weight: 4 }
+  - { id: obtain_mud_brick_wall,         type: item, item: MUD_BRICK_WALL,         count: 1, display: "Obtain Mud Brick Wall", weight: 4 }
+  - { id: obtain_observer,               type: item, item: OBSERVER,               count: 1, display: "Obtain Observer", weight: 4 }
+  - { id: obtain_piston,                 type: item, item: PISTON,                 count: 1, display: "Obtain Piston", weight: 4 }
+  - { id: obtain_powder_snow_bucket,     type: item, item: POWDER_SNOW_BUCKET,     count: 1, display: "Obtain Powder Snow Bucket", weight: 4, requires: { biomes: [grove, snowy_slopes] } }
+  - { id: obtain_powered_rail,           type: item, item: POWERED_RAIL,           count: 1, display: "Obtain Powered Rail", weight: 4 }
+  - { id: obtain_red_nether_brick_stairs, type: item, item: RED_NETHER_BRICK_STAIRS, count: 1, display: "Obtain Red Nether Brick Stairs", weight: 4 }
+  - { id: obtain_redstone_comparator,    type: item, item: COMPARATOR,            count: 1, display: "Obtain Redstone Comparator", weight: 4 }
+  - { id: obtain_redstone_lamp,          type: item, item: REDSTONE_LAMP,          count: 1, display: "Obtain Redstone Lamp", weight: 4 }
+  - { id: obtain_redstone_repeater,      type: item, item: REPEATER,              count: 1, display: "Obtain Redstone Repeater", weight: 4 }
+  - { id: obtain_scaffolding,            type: item, item: SCAFFOLDING,            count: 1, display: "Obtain Scaffolding", weight: 4 }
+  - { id: obtain_soul_campfire,          type: item, item: SOUL_CAMPFIRE,          count: 1, display: "Obtain Soul Campfire", weight: 4 }
+  - { id: obtain_soul_lantern,           type: item, item: SOUL_LANTERN,           count: 1, display: "Obtain Soul Lantern", weight: 4 }
+  - { id: obtain_sponge,                 type: item, item: SPONGE,                 count: 1, display: "Obtain Sponge", weight: 3, requires: { structures: [monument] } }
+  - { id: obtain_tnt,                    type: item, item: TNT,                    count: 1, display: "Obtain TNT", weight: 4 }
+  - { id: write_a_book,                  type: item, item: WRITTEN_BOOK,           count: 1, display: "Write a Book", weight: 4 }
+  - { id: obtain_wither_skeleton_skull,  type: item, item: WITHER_SKELETON_SKULL,  count: 1, display: "Obtain Wither Skeleton Skull", pool: custom-only, weight: 2 }
+
+  # ---- count goals -------------------------------------------------------
+  - { id: obtain_64_arrows,              type: item, item: ARROW,                  count: 64, display: "Obtain 64 Arrows", weight: 4 }
+
+  # ---- colour variants ---------------------------------------------------
+  - id: obtain_64_colored_wool
+    type: item
+    item: "{color}_WOOL"
+    count: 64
+    display: "Obtain 64 {color} Wool"
+    weight: 3
+    variants:
+      color: [white, orange, magenta, light_blue, yellow, lime, pink, gray, light_gray, cyan, purple, blue, brown, green, red, black]
+
+  - id: obtain_64_colored_concrete
+    type: item
+    item: "{color}_CONCRETE"
+    count: 64
+    display: "Obtain 64 {color} Concrete"
+    weight: 3
+    variants:
+      color: [white, orange, magenta, light_blue, yellow, lime, pink, gray, light_gray, cyan, purple, blue, brown, green, red, black]
+
+  - id: obtain_colored_glazed_terracotta
+    type: item
+    item: "{color}_GLAZED_TERRACOTTA"
+    count: 1
+    display: "Obtain {color} Glazed Terracotta"
+    weight: 3
+    variants:
+      color: [white, orange, magenta, light_blue, yellow, lime, pink, gray, light_gray, cyan, purple, blue, brown, green, red, black]
+
+  # ---- specific mob kills ------------------------------------------------
+  - { id: kill_bat,             type: mob_kill, entity: BAT,             count: 1, display: "Kill Bat", weight: 5 }
+  - { id: kill_elder_guardian,  type: mob_kill, entity: ELDER_GUARDIAN,  count: 1, display: "Kill Elder Guardian", weight: 3, requires: { structures: [monument] } }
+  - { id: kill_ghast,           type: mob_kill, entity: GHAST,           count: 1, display: "Kill Ghast", weight: 4 }
+  - { id: kill_guardian,        type: mob_kill, entity: GUARDIAN,        count: 1, display: "Kill Guardian", weight: 4, requires: { structures: [monument] } }
+  - { id: kill_silverfish,      type: mob_kill, entity: SILVERFISH,      count: 1, display: "Kill Silverfish", weight: 5 }
+  - { id: kill_snow_golem,      type: mob_kill, entity: SNOW_GOLEM,      count: 1, display: "Kill Snow Golem", weight: 5 }
+  - { id: kill_stray,           type: mob_kill, entity: STRAY,           count: 1, display: "Kill Stray", weight: 4, requires: { biomes: [frozen_river, snowy_plains, ice_spikes] } }
+  - { id: kill_witch,           type: mob_kill, entity: WITCH,           count: 1, display: "Kill Witch", weight: 4, requires: { structures: [swamp_hut] } }
+  - { id: kill_zoglin,          type: mob_kill, entity: ZOGLIN,          count: 1, display: "Kill Zoglin", weight: 3 }
+  - { id: kill_zombie_villager, type: mob_kill, entity: ZOMBIE_VILLAGER, count: 1, display: "Kill Zombie Villager", weight: 4, requires: { structures: [village_desert, village_plains, village_savanna, village_snowy, village_taiga] } }
+
+  # ---- dimensions --------------------------------------------------------
+  - { id: enter_nether,         type: dimension, dimension: NETHER,      display: "Enter Nether", weight: 4 }
+  - { id: enter_end,            type: dimension, dimension: END,         display: "Enter The End", weight: 4 }
+
+  # ========================================================================
+  # Fabric catalogue port (Slice 9)
+  # ========================================================================
+
+  # ---- consume and drink -------------------------------------------------
+  - { id: eat_5_unique_foods,        type: unique_foods, count: 5,  display: "Eat 5 Unique Food", weight: 4 }
+  - { id: eat_10_unique_foods,       type: unique_foods, count: 10, display: "Eat 10 Unique Food", weight: 3 }
+  - { id: eat_15_unique_foods,       type: unique_foods, count: 15, display: "Eat 15 Unique Food", weight: 2 }
+  - { id: eat_20_unique_foods,       type: unique_foods, count: 20, display: "Eat 20 Unique Food", weight: 2 }
+  - { id: eat_25_unique_foods,       type: unique_foods, count: 25, display: "Eat 25 Unique Food", weight: 1 }
+  - { id: eat_glow_berry,            type: consume_item, item: GLOW_BERRIES,      display: "Eat a Glow Berry", weight: 5 }
+  - { id: eat_poisonous_potato,      type: consume_item, item: POISONOUS_POTATO,  display: "Eat a Poisonous Potato", weight: 5 }
+  - { id: eat_cake,                  type: consume_item, item: CAKE,              display: "Eat a slice of Cake", requirement: "Eat a cake slice", weight: 4 }
+  - { id: eat_chorus_fruit,          type: consume_item, item: CHORUS_FRUIT,      display: "Eat Chorus Fruit", weight: 4 }
+  - { id: eat_cookie,                type: consume_item, item: COOKIE,            display: "Eat Cookie", weight: 5 }
+  - { id: eat_pumpkin_pie,           type: consume_item, item: PUMPKIN_PIE,       display: "Eat Pumpkin Pie", weight: 5 }
+  - { id: eat_rabbit_stew,           type: consume_item, item: RABBIT_STEW,       display: "Eat Rabbit Stew", weight: 5 }
+  - { id: eat_suspicious_stew,       type: consume_item, item: SUSPICIOUS_STEW,   display: "Eat Suspicious Stew", weight: 4 }
+  - { id: drink_honey_bottle,        type: consume_item, item: HONEY_BOTTLE,      display: "Drink Honey Bottle", weight: 5 }
+  - { id: drink_water_bottle,        type: consume_item, item: POTION, potion: WATER, display: "Drink Water Bottle", requirement: 'Drink a Water Bottle', weight: 5 }
+
+  # ---- advancements ------------------------------------------------------
+  - { id: get_10_advancements,       type: advancement_count, count: 10, display: "Get 10 Advancements", weight: 4 }
+  - { id: get_20_advancements,       type: advancement_count, count: 20, display: "Get 20 Advancements", weight: 2 }
+  - { id: get_30_advancements,       type: advancement_count, count: 30, display: "Get 30 Advancements", weight: 1 }
+  - { id: get_bullseye_advancement,  type: advancement, advancements: [minecraft:adventure/bullseye], display: 'Obtain "Bullseye" Advancement', requirement: 'Obtain the Bullseye advancement', weight: 3 }
+  - { id: get_sniper_duel_advancement, type: advancement, advancements: [minecraft:adventure/sniper_duel], display: 'Obtain "Sniper Duel" Advancement', requirement: 'Obtain the Sniper Duel advancement', weight: 3 }
+  - { id: get_this_boat_has_legs_advancement, type: advancement, advancements: [minecraft:nether/ride_strider], display: 'Obtain "This boat has legs" Advancement', requirement: 'Obtain the This Boat Has Legs advancement', weight: 3 }
+  - { id: get_any_spyglass_advancement, type: advancement, advancements: [minecraft:adventure/spyglass_at_parrot, minecraft:adventure/spyglass_at_ghast, minecraft:adventure/spyglass_at_dragon], display: "Get any Spyglass Advancement", requirement: 'Obtain any Spyglass advancement', weight: 3 }
+  - { id: get_hired_help_advancement, type: advancement, advancements: [minecraft:adventure/summon_iron_golem], display: "Construct an Iron Golem", requirement: 'Summon an Iron Golem', weight: 4 }
+  - { id: get_what_a_deal_advancement, type: advancement, advancements: [minecraft:adventure/trade], display: "Trade with a Villager", requirement: 'Trade with a Villager', weight: 4 }
+  - { id: get_oh_shiny_advancement,  type: advancement, advancements: [minecraft:nether/distract_piglin], display: "Distract a Piglin with Gold", requirement: 'Distract a Piglin with Gold', weight: 4 }
+  - { id: get_not_quite_nine_lives_advancement, type: advancement, advancements: [minecraft:nether/charge_respawn_anchor], display: "Charge a Respawn Anchor", requirement: 'Charge a Respawn Anchor', weight: 4 }
+  - { id: get_local_brewery_advancement, type: advancement, advancements: [minecraft:nether/brew_potion], display: "Use Brewing Stand", requirement: 'Brew a potion', weight: 4 }
+  - { id: get_eye_spy_advancement,   type: advancement, advancements: [minecraft:story/follow_ender_eye], display: "Find a Stronghold", requirement: 'Follow an Eye of Ender to a Stronghold', weight: 4 }
+  - { id: get_hot_tourist_destinations_advancement, type: advancement, advancements: [minecraft:nether/explore_nether], display: "Visit All Nether Biomes", requirement: 'Visit every Nether biome', weight: 3 }
+  - { id: get_wax_on_advancement,    type: advancement, advancements: [minecraft:husbandry/wax_on], display: "Wax a Copper Block", requirement: 'Wax a Copper Block', weight: 4 }
+  - { id: get_wax_off_advancement,   type: advancement, advancements: [minecraft:husbandry/wax_off], display: "Scrape wax off of Copper Block", requirement: 'Scrape wax off a Copper Block', weight: 4 }
+  - { id: get_a_terrible_fortress_advancement, type: advancement, advancements: [minecraft:nether/find_fortress], icon: NETHER_BRICKS, display: "Find a Nether Fortress", requirement: 'Obtain the A Terrible Fortress advancement', pool: custom-only, weight: 3 }
+  - { id: get_the_city_at_the_end_of_the_game_advancement, type: advancement, advancements: [minecraft:end/find_end_city], icon: PURPUR_BLOCK, display: "Find an End City", requirement: 'Obtain the City at the End of the Game advancement', pool: custom-only, weight: 2 }
+  - { id: get_those_were_the_days_advancement, type: advancement, advancements: [minecraft:nether/find_bastion], icon: POLISHED_BLACKSTONE_BRICKS, display: "Find a Bastion Remnant", requirement: 'Obtain the Those Were the Days advancement', pool: custom-only, weight: 3 }
+
+  # ---- status effects ----------------------------------------------------
+  - { id: get_absorption,            type: status_effect, effect: ABSORPTION,     display: "Get Absorption", weight: 5 }
+  - { id: get_bad_omen,              type: status_effect, effect: BAD_OMEN,       display: "Get Bad Omen", weight: 3, requires: { structures: [pillager_outpost] } }
+  - { id: get_glowing,               type: status_effect, effect: GLOWING,        display: "Get Glowing", weight: 4 }
+  - { id: get_jump_boost,            type: status_effect, effect: JUMP_BOOST,     display: "Get Jump Boost", weight: 5 }
+  - { id: get_levitation,            type: status_effect, effect: LEVITATION,     display: "Get Levitation", pool: custom-only, weight: 2 }
+  - { id: get_mining_fatigue,        type: status_effect, effect: MINING_FATIGUE, display: "Get Mining Fatigue", weight: 3, requires: { structures: [monument] } }
+  - { id: get_nausea,                type: status_effect, effect: NAUSEA,         display: "Get Nausea", weight: 4, requires: { biomes: [warm_ocean, deep_lukewarm_ocean, lukewarm_ocean] } }
+  - { id: get_poison,                type: status_effect, effect: POISON,         display: "Get Poison", weight: 4 }
+  - { id: get_weakness,              type: status_effect, effect: WEAKNESS,       display: "Get Weakness", weight: 4 }
+  - { id: get_3_status_effects,      type: status_effect_count, count: 3, display: "Get 3 Status Effects at once", weight: 3 }
+  - { id: get_4_status_effects,      type: status_effect_count, count: 4, display: "Get 4 Status Effects at once", weight: 2 }
+  - { id: get_6_status_effects,      type: status_effect_count, count: 6, display: "Get 6 Status Effects at once", weight: 1 }
+  - { id: remove_status_effect_using_milk, type: milk_effect, display: "Remove Effect using Milk Bucket", weight: 4 }
+
+  # ========================================================================
+  # Fabric catalogue port (Slice 10a)
+  # ========================================================================
+
+  # ---- deaths ------------------------------------------------------------
+  - { id: die_to_anvil,              type: death_by, damage-type: "minecraft:falling_anvil",      display: "Die to falling Anvil", requirement: "Die to a falling anvil", weight: 4 }
+  - { id: die_to_bee_sting,          type: death_by, damage-type: "minecraft:sting", entity: BEE,   display: "Die to Bee Sting", requirement: "Die to a bee sting", weight: 4 }
+  - { id: die_to_berry_bush,         type: death_by, damage-type: "minecraft:sweet_berry_bush",   display: "Die to Berry Bush", requirement: "Die to a sweet berry bush", weight: 4, requires: { biomes: [taiga, snowy_taiga] } }
+  - { id: die_to_cactus,             type: death_by, damage-type: "minecraft:cactus",             display: "Die to Cactus", requirement: "Die to a cactus", weight: 5, requires: { biomes: [desert, badlands, wooded_badlands, eroded_badlands] } }
+  - { id: die_by_falling_off_vines,  type: death_by, special: VINES,                               display: "Die by falling off Vines", requirement: "Die from fall damage next to vines", weight: 3 }
+  - { id: die_to_falling_stalactite, type: death_by, damage-type: "minecraft:falling_stalactite", display: "Die to Falling Stalactite", requirement: "Die to a falling stalactite", weight: 4 }
+  - { id: die_to_firework,           type: death_by, damage-type: "minecraft:fireworks",          display: "Die to Firework Rocket", requirement: "Die to a firework rocket", weight: 3 }
+  - { id: die_to_intentional_game_design, type: death_by, damage-type: "minecraft:bad_respawn_point", display: "Die to [Intentional Game Design]", requirement: "Die to a bad respawn point explosion", weight: 4 }
+  - { id: die_to_iron_golem,         type: death_by, entity: IRON_GOLEM,                           display: "Die to Iron Golem", requirement: "Die to an iron golem", weight: 4 }
+  - { id: die_to_polar_bear,         type: death_by, entity: POLAR_BEAR,                           display: "Die to Polar Bear", requirement: "Die to a polar bear", weight: 4, requires: { biomes: [snowy_plains, ice_spikes, frozen_ocean, deep_frozen_ocean] } }
+  - { id: die_by_magic,              type: death_by, damage-type: "minecraft:magic",              display: "Die by Magic", requirement: "Die to magic damage", weight: 4, requires: { structures: [monument] } }
+  - { id: die_to_tnt_minecart,       type: death_by, entity: TNT_MINECART,                         display: "Die to TNT Minecart", requirement: "Die to a TNT minecart", weight: 3 }
+  - { id: die_by_freezing,           type: death_by, damage-type: "minecraft:freeze",             display: "Die by Freezing", requirement: "Die to freezing", weight: 4, requires: { biomes: [grove, snowy_slopes] } }
+
+  # ---- damage ------------------------------------------------------------
+  - { id: take_200_damage,           type: damage_total, mode: TAKEN, amount: 200, display: "Take 200 damage", weight: 4 }
+  - { id: deal_400_damage,           type: damage_total, mode: DEALT, amount: 400, display: "Deal 400 damage", weight: 3 }
+
+  # ---- experience --------------------------------------------------------
+  - { id: reach_xp_level_15,         type: xp_level, level: 15, display: "Reach XP level 15", weight: 5 }
+  - { id: reach_xp_level_30,         type: xp_level, level: 30, display: "Reach XP level 30", weight: 3 }
+
+  # ---- position ----------------------------------------------------------
+  - { id: reach_height_limit,        type: position, mode: HEIGHT_LIMIT, display: "Reach height limit in Overworld", weight: 3 }
+  - { id: reach_bedrock,             type: position, mode: BEDROCK, display: "Reach Bedrock", weight: 4 }
+  - { id: reach_nether_roof,         type: position, mode: NETHER_ROOF, display: "Get on Nether Roof", weight: 3 }
+
+  # ---- hunger and riding -------------------------------------------------
+  - { id: empty_hunger_bar,          type: empty_hunger, display: "Empty Hunger Bar", weight: 4 }
+  - { id: ride_horse,                type: ride, entity: HORSE, display: "Ride a Horse", weight: 5 }
+  - { id: ride_minecart,             type: ride, entity: MINECART, display: "Ride a Minecart", weight: 5 }
+  - { id: ride_pig,                  type: ride, entity: PIG, display: "Ride Pig with Carrot on a Stick", weight: 4 }
+
+  # ---- statistics --------------------------------------------------------
+  - { id: sprint_1km,                type: stat_counter, statistic: SPRINT_ONE_CM, amount: 1000, divisor: 100, display: "Sprint 1km", requirement: "Sprint 1 km", weight: 4 }
+
+  # ========================================================================
+  # Fabric catalogue port (Slice 10b)
+  # ========================================================================
+
+  # ---- armor and wearables -----------------------------------------------
+  - { id: wear_leather_armor, type: armor_set, items: [LEATHER_HELMET, LEATHER_CHESTPLATE, LEATHER_LEGGINGS, LEATHER_BOOTS], icon: LEATHER_CHESTPLATE, display: "Wear Full Leather Armor", requirement: "Wear full leather armor", weight: 5 }
+  - { id: wear_golden_armor,  type: armor_set, items: [GOLDEN_HELMET, GOLDEN_CHESTPLATE, GOLDEN_LEGGINGS, GOLDEN_BOOTS],     icon: GOLDEN_CHESTPLATE,  display: "Wear Full Golden Armor",  requirement: "Wear full golden armor",  weight: 4 }
+  - { id: wear_iron_armor,    type: armor_set, items: [IRON_HELMET, IRON_CHESTPLATE, IRON_LEGGINGS, IRON_BOOTS],             icon: IRON_CHESTPLATE,    display: "Wear Full Iron Armor",    requirement: "Wear full iron armor",    weight: 5 }
+  - { id: wear_diamond_armor, type: armor_set, items: [DIAMOND_HELMET, DIAMOND_CHESTPLATE, DIAMOND_LEGGINGS, DIAMOND_BOOTS], icon: DIAMOND_CHESTPLATE, display: "Wear Full Diamond Armor", requirement: "Wear full diamond armor", weight: 2 }
+  - { id: wear_chain_armor_piece, type: armor_piece, items: [CHAINMAIL_HELMET, CHAINMAIL_CHESTPLATE, CHAINMAIL_LEGGINGS, CHAINMAIL_BOOTS], icon: CHAINMAIL_CHESTPLATE, display: "Wear a Chain Armor Piece", requirement: "Wear any piece of chainmail armor", weight: 4, requires: { structures: [village_desert, village_plains, village_savanna, village_snowy, village_taiga] } }
+
+  - id: wear_colored_leather_piece
+    type: armor_piece
+    item: "{piece}"
+    color: "{color}"
+    display: "Wear {color} {piece}"
+    requirement: "Wear a {color} {piece}"
+    weight: 4
+    variants:
+      piece: [leather_helmet, leather_chestplate, leather_leggings, leather_boots]
+      color: [orange, magenta, light_blue, yellow, lime, cyan, purple, blue, brown, green, red]
+
+  - { id: wear_unique_colored_leather_armor, type: armor_set, mode: UNIQUE_DYED_LEATHER, display: "Wear Full Leather Armor, in different colors", weight: 3 }
+  - { id: wear_full_enchanted_armor,         type: armor_set, mode: ENCHANTED,           display: "Wear Full Enchanted Armor", weight: 3 }
+  - { id: wear_carved_pumpkin_5m,            type: armor_timer, item: CARVED_PUMPKIN, seconds: 300, display: "Wear a Carved Pumpkin for 5 minutes", requirement: "Wear a carved pumpkin for 5 minutes total", weight: 3 }
+  - { id: put_wolf_armor_on_wolf,            type: wolf_armor, display: "Put Wolf Armor on Wolf", weight: 4, requires: { biomes: [savanna, savanna_plateau, windswept_savanna, badlands, eroded_badlands, wooded_badlands] } }
+
+  # ---- item sets ---------------------------------------------------------
+  - { id: obtain_wooden_tools,  type: item_set, items: [WOODEN_SWORD, WOODEN_PICKAXE, WOODEN_AXE, WOODEN_SHOVEL, WOODEN_HOE],     icon: WOODEN_PICKAXE,  display: "Obtain all Wooden Tools",  requirement: "Hold all 5 wooden tools",  weight: 5 }
+  - { id: obtain_stone_tools,   type: item_set, items: [STONE_SWORD, STONE_PICKAXE, STONE_AXE, STONE_SHOVEL, STONE_HOE],          icon: STONE_PICKAXE,   display: "Obtain all Stone Tools",   requirement: "Hold all 5 stone tools",   weight: 5 }
+  - { id: obtain_iron_tools,    type: item_set, items: [IRON_SWORD, IRON_PICKAXE, IRON_AXE, IRON_SHOVEL, IRON_HOE],               icon: IRON_PICKAXE,    display: "Obtain all Iron Tools",    requirement: "Hold all 5 iron tools",    weight: 4 }
+  - { id: obtain_golden_tools,  type: item_set, items: [GOLDEN_SWORD, GOLDEN_PICKAXE, GOLDEN_AXE, GOLDEN_SHOVEL, GOLDEN_HOE],     icon: GOLDEN_PICKAXE,  display: "Obtain all Golden Tools",  requirement: "Hold all 5 golden tools",  weight: 4 }
+  - { id: obtain_diamond_tools, type: item_set, items: [DIAMOND_SWORD, DIAMOND_PICKAXE, DIAMOND_AXE, DIAMOND_SHOVEL, DIAMOND_HOE], icon: DIAMOND_PICKAXE, display: "Obtain all Diamond Tools", requirement: "Hold all 5 diamond tools", weight: 2 }
+
+  - { id: obtain_all_horse_armor,    type: item_set, items: [LEATHER_HORSE_ARMOR, IRON_HORSE_ARMOR, GOLDEN_HORSE_ARMOR, DIAMOND_HORSE_ARMOR], icon: DIAMOND_HORSE_ARMOR, display: "Obtain every type of Horse Armor", requirement: "Hold leather, iron, golden and diamond horse armor", weight: 2 }
+  - { id: obtain_all_minecarts,      type: item_set, items: [MINECART, CHEST_MINECART, FURNACE_MINECART, HOPPER_MINECART, TNT_MINECART],      icon: MINECART,            display: "Obtain every type of Minecart",    requirement: "Hold all 5 minecart types", weight: 4 }
+  - { id: obtain_all_mushrooms,      type: item_set, items: [RED_MUSHROOM, BROWN_MUSHROOM, CRIMSON_FUNGUS, WARPED_FUNGUS],                    icon: RED_MUSHROOM,        display: "Obtain every type of Mushroom",    requirement: "Hold red/brown mushrooms and crimson/warped fungi", weight: 4 }
+  - { id: obtain_all_pumpkins,       type: item_set, items: [PUMPKIN, CARVED_PUMPKIN, JACK_O_LANTERN],                                        icon: JACK_O_LANTERN,      display: "Obtain every type of Pumpkin",     requirement: "Hold pumpkin, carved pumpkin and jack o' lantern", weight: 4 }
+  - { id: obtain_all_raw_ore_blocks, type: item_set, items: [RAW_COPPER_BLOCK, RAW_IRON_BLOCK, RAW_GOLD_BLOCK],                               icon: RAW_IRON_BLOCK,      display: "Obtain every type of Raw Ore Block", requirement: "Hold raw copper, iron and gold blocks", weight: 4 }
+
+  - id: obtain_4_unique_saplings
+    type: item_set
+    count: 4
+    items: [OAK_SAPLING, SPRUCE_SAPLING, BIRCH_SAPLING, JUNGLE_SAPLING, ACACIA_SAPLING, DARK_OAK_SAPLING, MANGROVE_PROPAGULE, CHERRY_SAPLING, PALE_OAK_SAPLING]
+    icon: OAK_SAPLING
+    display: "Obtain 4 Unique Saplings"
+    requirement: "Hold 4 different sapling types"
+    weight: 4
+
+  - id: obtain_4_unique_seeds
+    type: item_set
+    count: 4
+    items: [WHEAT_SEEDS, BEETROOT_SEEDS, MELON_SEEDS, PUMPKIN_SEEDS, TORCHFLOWER_SEEDS]
+    icon: WHEAT_SEEDS
+    display: "Obtain 4 Unique Seeds"
+    requirement: "Hold 4 different seed types"
+    weight: 4
+
+  - id: obtain_6_unique_buckets
+    type: item_set
+    count: 6
+    items: [BUCKET, WATER_BUCKET, LAVA_BUCKET, MILK_BUCKET, POWDER_SNOW_BUCKET, COD_BUCKET, SALMON_BUCKET, TROPICAL_FISH_BUCKET, PUFFERFISH_BUCKET, AXOLOTL_BUCKET, TADPOLE_BUCKET]
+    icon: BUCKET
+    display: "Obtain 6 Unique Buckets"
+    requirement: "Hold 6 different bucket types"
+    weight: 4
+
+  - id: obtain_6_unique_flowers
+    type: item_set
+    count: 6
+    items: [DANDELION, POPPY, BLUE_ORCHID, ALLIUM, AZURE_BLUET, RED_TULIP, ORANGE_TULIP, WHITE_TULIP, PINK_TULIP, OXEYE_DAISY, CORNFLOWER, LILY_OF_THE_VALLEY, TORCHFLOWER, WITHER_ROSE, SUNFLOWER, LILAC, ROSE_BUSH, PEONY, OPEN_EYEBLOSSOM, CLOSED_EYEBLOSSOM, CACTUS_FLOWER, WILDFLOWERS]
+    icon: POPPY
+    display: "Obtain 6 Unique Flowers"
+    requirement: "Hold 6 different flower types"
+    weight: 4
+
+  - id: obtain_7_workstations
+    type: item_set
+    count: 7
+    items: [BLAST_FURNACE, SMOKER, CARTOGRAPHY_TABLE, BREWING_STAND, BARREL, COMPOSTER, FLETCHING_TABLE, CAULDRON, LECTERN, STONECUTTER, LOOM, SMITHING_TABLE, GRINDSTONE]
+    icon: BLAST_FURNACE
+    display: "Obtain 7 Unique Workstations"
+    requirement: "Hold 7 different villager workstations"
+    weight: 4
+
+  - { id: fill_inventory_unique_items, type: unique_inventory, count: 36, display: "Fill Inventory with unique items", requirement: "Fill all 36 inventory slots with unique items", weight: 4 }
+
+  # ========================================================================
+  # Fabric catalogue port (Slice 11)
+  # ========================================================================
+
+  # ---- team kill counters, mob groups and colored sheep ------------------
+  - { id: kill_100_mobs,               type: mob_kill_total,  count: 100, display: "Kill 100 mobs", weight: 3 }
+  - { id: kill_7_unique_hostile_mobs,  type: mob_kill_unique, count: 7,   display: "Kill 7 Unique Hostile Mobs",  weight: 4 }
+  - { id: kill_10_unique_hostile_mobs, type: mob_kill_unique, count: 10,  display: "Kill 10 Unique Hostile Mobs", weight: 3 }
+  - { id: kill_13_unique_hostile_mobs, type: mob_kill_unique, count: 13,  display: "Kill 13 Unique Hostile Mobs", weight: 2 }
+  - { id: kill_15_unique_hostile_mobs, type: mob_kill_unique, count: 15,  display: "Kill 15 Unique Hostile Mobs", weight: 1 }
+
+  - id: kill_20_arthropods
+    type: mob_kill_group
+    count: 20
+    entities: [BEE, CAVE_SPIDER, SPIDER, ENDERMITE, SILVERFISH]
+    icon: SPIDER_EYE
+    display: "Kill 20 Arthropods"
+    requirement: "Kill 20 arthropod mobs as a team"
+    weight: 4
+
+  - id: kill_30_undead_mobs
+    type: mob_kill_group
+    count: 30
+    entities: [DROWNED, HUSK, PHANTOM, SKELETON, SKELETON_HORSE, STRAY, WITHER, WITHER_SKELETON, ZOGLIN, ZOMBIE, ZOMBIE_HORSE, ZOMBIE_VILLAGER, ZOMBIFIED_PIGLIN, BOGGED, PARCHED, CAMEL_HUSK, ZOMBIE_NAUTILUS]
+    icon: ROTTEN_FLESH
+    display: "Kill 30 Undead Mobs"
+    requirement: "Kill 30 undead mobs as a team"
+    weight: 4
+
+  - id: kill_all_raid_mobs
+    type: mob_kill_unique
+    entities: [PILLAGER, VINDICATOR, RAVAGER, WITCH, VEX, EVOKER]
+    icon: CROSSBOW
+    display: "Kill all Raid Mobs"
+    requirement: "Kill Pillager, Vindicator, Ravager, Witch, Vex and Evoker"
+    requires:
+      structures: [pillager_outpost, mansion]
+    weight: 2
+
+  - id: kill_colored_sheep
+    type: colored_sheep_kill
+    color: "{color}"
+    icon: "{color}_WOOL"
+    display: "Kill {color} Sheep"
+    requirement: "Kill a {color} Sheep"
+    weight: 4
+    variants:
+      color: [orange, magenta, light_blue, yellow, lime, cyan, purple, blue, green, red]
+
+  # ---- opponent goals (2-team only) --------------------------------------
+  - { id: opponent_dies,              type: opponent, trigger: DEATH,        count: 1,    team-size: "2", display: "Opponent dies", weight: 4 }
+  - { id: opponent_dies_3_times,      type: opponent, trigger: DEATH,        count: 3,    team-size: "2", display: "Opponent dies 3 times", weight: 3 }
+  - { id: opponent_catches_on_fire,   type: opponent, trigger: CATCH_FIRE,                team-size: "2", display: "Opponent catches on Fire", weight: 4 }
+  - { id: opponent_takes_fall_damage, type: opponent, trigger: FALL_DAMAGE,               team-size: "2", display: "Opponent takes Fall Damage", weight: 4 }
+  - { id: opponent_takes_100_damage,  type: opponent, trigger: DAMAGE_TAKEN, amount: 100, team-size: "2", display: "Opponent Team takes 100 Damage", weight: 3 }
+  - { id: opponent_touches_water,     type: opponent, trigger: TOUCH_WATER,               team-size: "2", display: "Opponent touches Water", weight: 4 }
+  # Custom-only opponent goals (excluded from random pool by default, matching Fabric)
+  - { id: opponent_obtains_crafting_table, type: opponent, trigger: OBTAIN_ITEM, item: CRAFTING_TABLE, team-size: "2", pool: custom-only, display: "Opponent obtains Crafting Table", weight: 3 }
+  - { id: opponent_obtains_obsidian,       type: opponent, trigger: OBTAIN_ITEM, item: OBSIDIAN,       team-size: "2", pool: custom-only, display: "Opponent obtains Obsidian", weight: 3 }
+  - { id: opponent_obtains_seeds,          type: opponent, trigger: OBTAIN_ITEM, item: WHEAT_SEEDS,    team-size: "2", pool: custom-only, display: "Opponent obtains Wheat Seeds", weight: 3 }
+  - { id: opponent_eats_food,              type: opponent, trigger: EAT_FOOD,                          team-size: "2", pool: custom-only, display: "Opponent eats Food", weight: 3 }
+  - { id: opponent_hit_by_egg,             type: opponent, trigger: HIT_BY_EGG,                        team-size: "2", pool: custom-only, display: "Opponent hit by Egg", weight: 3 }
+  - { id: opponent_hit_by_snowball,        type: opponent, trigger: HIT_BY_SNOWBALL,                   team-size: "2", pool: custom-only, display: "Opponent hit by Snowball", weight: 3 }
+
+  # ========================================================================
+  # Fabric catalogue port (Slice 12)
+  # ========================================================================
+
+  # ---- workstations ------------------------------------------------------
+  - { id: use_anvil,            type: workstation, station: ANVIL,            weight: 5 }
+  - { id: use_cauldron,         type: workstation, station: CAULDRON,         weight: 4 }
+  - { id: use_composter,        type: workstation, station: COMPOSTER,        weight: 4 }
+  - { id: use_enchanting_table, type: workstation, station: ENCHANTING_TABLE, weight: 4 }
+  - { id: use_grindstone,       type: workstation, station: GRINDSTONE,       weight: 5 }
+  - { id: use_loom,             type: workstation, station: LOOM,             weight: 5 }
+  - { id: use_smithing_table,   type: workstation, station: SMITHING_TABLE,   weight: 4 }
+  - { id: use_stonecutter,      type: workstation, station: STONECUTTER,      weight: 5 }
+
+  # ---- brewing -----------------------------------------------------------
+  - { id: brew_healing_potion,         type: brew_potion, potions: [HEALING, STRONG_HEALING],                  display: "Brew a Potion of Healing",         weight: 3 }
+  - { id: brew_invisibility_potion,    type: brew_potion, potions: [INVISIBILITY, LONG_INVISIBILITY],          display: "Brew a Potion of Invisibility",    weight: 3 }
+  - { id: brew_poison_potion,          type: brew_potion, potions: [POISON, LONG_POISON, STRONG_POISON],       display: "Brew a Potion of Poison",          weight: 3 }
+  - { id: brew_swiftness_potion,       type: brew_potion, potions: [SWIFTNESS, LONG_SWIFTNESS, STRONG_SWIFTNESS], display: "Brew a Potion of Swiftness",    weight: 4 }
+  - { id: brew_water_breathing_potion, type: brew_potion, potions: [WATER_BREATHING, LONG_WATER_BREATHING],    display: "Brew a Potion of Water Breathing", weight: 3 }
+  - { id: brew_weakness_potion,        type: brew_potion, potions: [WEAKNESS, LONG_WEAKNESS],                  display: "Brew a Potion of Weakness",        weight: 3 }
+  - { id: brew_lingering_potion,       type: brew_potion, mode: LINGERING,                                     display: "Brew a Lingering Potion",          weight: 2 }
+
+  # ---- mining ------------------------------------------------------------
+  - { id: mine_diamond_ore, type: mine_block, blocks: [DIAMOND_ORE, DEEPSLATE_DIAMOND_ORE], display: "Mine Diamond Ore", requirement: "Break Diamond Ore or Deepslate Diamond Ore", weight: 5 }
+  - { id: mine_emerald_ore, type: mine_block, blocks: [EMERALD_ORE, DEEPSLATE_EMERALD_ORE], display: "Mine Emerald Ore", requirement: "Break Emerald Ore or Deepslate Emerald Ore", weight: 4, requires: { biomes: [jagged_peaks, frozen_peaks, stony_peaks, grove, snowy_slopes] } }
+  - { id: mine_mob_spawner, type: mine_block, blocks: [SPAWNER],                            display: "Mine Mob Spawner", requirement: "Break a Monster Spawner", weight: 4 }
+  - { id: mine_turtle_egg,  type: mine_block, blocks: [TURTLE_EGG],                         display: "Mine Turtle Egg",  requirement: "Break a Turtle Egg", weight: 3, requires: { biomes: [beach] } }
+  - { id: mine_crafter,     type: mine_block, blocks: [CRAFTER],                            display: "Mine Crafter",     requirement: "Break a Crafter block", weight: 4 }
+
+  # ---- misc interactions and block actions -------------------------------
+  - { id: use_jukebox,                   type: block_action, action: USE_JUKEBOX,              weight: 4 }
+  - { id: use_glow_ink_on_crimson_sign,  type: block_action, action: GLOW_INK_CRIMSON_SIGN,    weight: 4 }
+  - { id: put_flower_in_pot,             type: block_action, action: POT_FLOWER,               weight: 5 }
+  - { id: fill_armor_stand,              type: block_action, action: FILL_ARMOR_STAND,         weight: 5 }
+  - { id: item_frame_in_item_frame,      type: block_action, action: ITEM_FRAME_IN_ITEM_FRAME, weight: 5 }
+  - { id: fill_campfire,                 type: block_action, action: FILL_CAMPFIRE,            weight: 5 }
+  - { id: fill_chiseled_bookshelf,       type: block_action, action: FILL_CHISELED_BOOKSHELF,  weight: 4 }
+  - { id: place_end_crystal,             type: block_action, action: PLACE_END_CRYSTAL,        weight: 3 }
+  - { id: light_candle,                  type: block_action, action: LIGHT_CANDLE,             weight: 4 }
+  - { id: shoot_firework_from_crossbow,  type: block_action, action: SHOOT_FIREWORK_CROSSBOW,  weight: 4 }
+  - { id: toot_goat_horn,                type: block_action, action: TOOT_GOAT_HORN,           weight: 3, requires: { biomes: [frozen_peaks, jagged_peaks, snowy_slopes] } }
+  - { id: use_brush_on_suspicious_block, type: block_action, action: BRUSH_SUSPICIOUS_BLOCK,   weight: 3, requires: { structures: [ocean_ruin_warm, trail_ruins] } }
+  - { id: anger_zombified_piglin,        type: block_action, action: ANGER_ZOMBIFIED_PIGLIN,   weight: 5 }
+  - { id: have_shield_disabled,          type: block_action, action: SHIELD_DISABLED,          weight: 4 }
+  - { id: decorate_shield_with_banner,   type: banner_shield,                                  weight: 5 }
+
+  # ---- conditional kills -------------------------------------------------
+  - { id: kill_breeze_using_wind_charge, type: conditional_kill, entity: BREEZE,     damage-type: "minecraft:wind_charge", icon: WIND_CHARGE, display: "Kill Breeze using Wind Charge", requirement: "Kill a Breeze using a Wind Charge", weight: 2 }
+  - { id: kill_snow_golem_in_nether,     type: conditional_kill, entity: SNOW_GOLEM, dimension: NETHER,                                       display: "Kill Snow Golem in The Nether", requirement: "Kill a Snow Golem in The Nether",   weight: 4 }

@@ -1,0 +1,20 @@
+name: TLockout
+version: '1.6.1'
+main: dev.tlockout.TLockout
+api-version: '26.3'
+description: Lockout challenge - goal board generation, tracking and lockout claims.
+authors: [tlockout]
+
+commands:
+  lockout:
+    description: Lockout challenge control
+    usage: /lockout <start|stop|reroll|mode|goalstowin|forcewin|board|compass|status|join|leave|team|track|autoreset|keepinventory|reload>
+    aliases: [lo]
+
+permissions:
+  tlockout.admin:
+    description: Start/stop the challenge and reload the config
+    default: op
+  tlockout.play:
+    description: Open the board and view status
+    default: true

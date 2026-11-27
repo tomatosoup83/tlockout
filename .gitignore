@@ -1,0 +1,30 @@
+# Build output
+build/
+.gradle/
+
+# Local toolchain used only for compile checks (JDK + Gradle), not part of the project
+.tools/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Run artifacts
+run/
+logs/
+*.log
+
+# Local SFTP deploy credentials (never commit)
+.deploy.env
+
+# Reference material & local tooling
+lockout-fabric/
+.commandcode/
+
+# Local test server runtime files (keep launch script)
+testServer/*
+!testServer/launch.sh
+
+# OS files
+.DS_Store
