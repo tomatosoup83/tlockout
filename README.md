@@ -144,3 +144,9 @@ src/main/
     ├── config.yml
     └── goals.yml
 ```
+
+---
+
+## Credits
+
+- **[Lockout (Fabric)](https://github.com/marin774/lockout-fabric)** by **Mar1n (`marin774`)** — TLockout's goal catalogue, anti-clustering rules, world feasibility scanning, and overall game design are ported/adapted from the original Fabric mod (inspired by Smallant's Lockout Bingo mod).
